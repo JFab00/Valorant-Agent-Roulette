@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Valorant Agent Roulette</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" integrity="sha384-tViUnnbYAV00FLIhhi3v/dWt3Jxw4gZQcNoSCxCIFNJVCx7/D55/wXsrNIRANwdD" crossorigin="anonymous">
+  <script src="script.js"></script>
+</head>
+<body>
+  <button id="settings-button"><i class="bi bi-gear" id="cog-icon"></i></button>
+  
+  <div id="centered">
+    <h1>Valorant Agent Roulette</h1>
+    <div id="roulette-container">
+      <div id="black-overlay-left"></div>
+      <div id="black-overlay-right"></div>
+      <div id="scroll"></div>
+      <div id="selector"></div>
+    </div>
+    <button id="spin-button">Spin</button>
+  </div>
+
+  <div id="overlay"></div>
+  <div id="settings-panel">
+    <h2>Select Available Agents</h2>
+    <div id="agent-selection"></div>
+    <button id="save-settings">Save Settings</button>
+  </div>
+
+  <div id="winner-display">
+    <div id="winner-splash"></div>
+    <div id="winner-name"></div>
+    <button id="close-winner">Continue</button>
+  </div>
+
+  <div class="footer">
+        This is a small fun project made for Valorant | This page is not in any way associated with Riot Games
+    </div>
+</body>
+</html>
