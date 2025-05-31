@@ -1,4 +1,4 @@
-// Agent data with image URLs (using official Valorant agent icons)
+// Agent data with UUIDs (using official Valorant agent icons) https://valorant-uuid-finder.vercel.app/
 const agentData = [
   { name: "Brimstone", uuid: "9f0d8ba9-4140-b941-57d3-a7ad57c6b417" },
   { name: "Viper", uuid: "707eab51-4836-f488-046a-cda6bf494859" },
@@ -147,8 +147,9 @@ document.addEventListener("DOMContentLoaded", function () {
   function startRoulette() {
     if (isSpinning || availableAgents.length === 0) return;
 
-    // Disable spin button during animation
+    // Disable spin button and settings button during animation
     spinButton.disabled = true;
+    settingsButton.disabled = true;
     isSpinning = true;
     scroll.innerHTML = "";
 
@@ -175,7 +176,7 @@ document.addEventListener("DOMContentLoaded", function () {
       scroll.appendChild(div);
     });
 
-    const itemWidth = 124; // Width + margin of each agent item
+    const itemWidth = 123.97; // Width + margin of each agent item
     const winnerIndex = prefix.length + availableAgents.length;
     const containerCenter = 302; // Half of #roulette-container width (604px)
     const targetOffset =
@@ -198,6 +199,7 @@ document.addEventListener("DOMContentLoaded", function () {
         setTimeout(() => {
           showWinner(winner);
           spinButton.disabled = false;
+          settingsButton.disabled = false;
         }, 100);
       }
     }
@@ -231,7 +233,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 10);
   }
 
-  // Helper function to get agent UUID (you'll need to add this to your agentData)
+  // Helper function to get agent UUID
   function getAgentUUID(agentName) {
     const agent = agentData.find((a) => a.name === agentName);
     return agent ? agent.uuid : "";
