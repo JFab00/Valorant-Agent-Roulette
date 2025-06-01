@@ -40,9 +40,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const scroll = document.getElementById("scroll");
   let isSpinning = false;
   let skipSplash = false;
-
-  let settingsOpen = false;
-  let splashVisible = false;
+  const spinSound = new Audio("spin-sound.mp3");
+  const winSound = new Audio("winner-sound.mp3");
+  let muteSfx = false;
 
   // DOM elements
   const settingsButton = document.getElementById("settings-button");
@@ -143,6 +143,10 @@ document.addEventListener("DOMContentLoaded", function () {
     skipSplash = skipCheckbox.checked;
     localStorage.setItem("skipSplash", skipSplash);
 
+    const muteCheckbox = document.getElementById("mute-sfx-checkbox");
+    muteSfx = muteCheckbox.checked;
+    localStorage.setItem("muteSfx", muteSfx);
+
     toggleSettings();
     updateSpinButton();
   }
@@ -164,6 +168,13 @@ document.addEventListener("DOMContentLoaded", function () {
     settingsButton.disabled = true;
     isSpinning = true;
     scroll.innerHTML = "";
+
+    if (!muteSfx) {
+      spinSound.currentTime = 0;
+      spinSound.loop = true;
+      spinSound.volume = 0.3;
+      spinSound.play().catch((e) => console.warn("Spin sound error:", e));
+    }
 
     // Filter out recent winners
     const eligibleAgents = availableAgents.filter(
@@ -200,7 +211,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const targetOffset =
       winnerIndex * itemWidth + itemWidth / 2 - containerCenter;
 
-    const duration = 3000; // animation duration in milliseconds
+    const duration = 3500; // animation duration in milliseconds
     const startTime = performance.now();
 
     function animate(currentTime) {
@@ -213,13 +224,22 @@ document.addEventListener("DOMContentLoaded", function () {
       if (progress < 1) {
         requestAnimationFrame(animate);
       } else {
+        spinSound.pause();
+        spinSound.currentTime = 0;
+
+        if (!muteSfx) {
+          winSound.currentTime = 0;
+          winSound.volume = 0.6;
+          winSound.play().catch((e) => console.warn("Win sound error:", e));
+        }
+
         isSpinning = false;
         setTimeout(() => {
           if (!skipSplash) {
             showWinner(winner);
           }
           recentWinners.push(winner.name);
-          if (recentWinners.length > maxHistory) {
+          if (recentWinners.length >= maxHistory) {
             recentWinners.shift();
           }
           updateRecentDisplay();
@@ -331,6 +351,17 @@ document.addEventListener("DOMContentLoaded", function () {
     skipSplash = savedSkip === "true";
     const skipCheckbox = document.getElementById("skip-splash-checkbox");
     if (skipCheckbox) skipCheckbox.checked = skipSplash;
+  }
+
+  const savedMute = localStorage.getItem("muteSfx");
+  if (savedMute) {
+    muteSfx = savedMute === "true";
+    const muteCheckbox = document.getElementById("mute-sfx-checkbox");
+    if (muteCheckbox) muteCheckbox.checked = muteSfx;
+
+    // Optional: style toggle correctly
+    const container = muteCheckbox.closest(".checkbox-toggle");
+    container?.classList.toggle("checked", muteSfx);
   }
 
   updateSpinButton();
