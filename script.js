@@ -35,8 +35,14 @@ const fallbackImage =
 
 document.addEventListener("DOMContentLoaded", function () {
   let availableAgents = [...agentData];
+  let recentWinners = [];
+  const maxHistory = 5;
   const scroll = document.getElementById("scroll");
   let isSpinning = false;
+  let skipSplash = false;
+
+  let settingsOpen = false;
+  let splashVisible = false;
 
   // DOM elements
   const settingsButton = document.getElementById("settings-button");
@@ -51,6 +57,9 @@ document.addEventListener("DOMContentLoaded", function () {
   saveSettingsButton.addEventListener("click", saveSettings);
   closeWinnerButton.addEventListener("click", closeWinner);
   overlay.addEventListener("click", toggleSettings);
+  document
+    .getElementById("close-settings")
+    .addEventListener("click", toggleSettings);
 
   // Initialize settings panel
   function initializeSettings() {
@@ -101,17 +110,16 @@ document.addEventListener("DOMContentLoaded", function () {
     container.classList.toggle("checked", checkbox.checked);
   }
 
-  // Toggle settings panel visibility
   function toggleSettings() {
     const panel = document.getElementById("settings-panel");
-
-    if (panel.style.display === "block") {
-      panel.style.display = "none";
-      overlay.style.display = "none";
+    console.log("is it contained > ", panel.classList.contains("open"));
+    if (panel.classList.contains("open")) {
+      panel.classList.remove("open");
+      overlay.classList.remove("show");
     } else {
+      panel.classList.add("open");
+      overlay.classList.add("show");
       initializeSettings();
-      panel.style.display = "block";
-      overlay.style.display = "block";
     }
   }
 
@@ -130,6 +138,10 @@ document.addEventListener("DOMContentLoaded", function () {
       alert("Please select at least one agent!");
       return;
     }
+
+    const skipCheckbox = document.getElementById("skip-splash-checkbox");
+    skipSplash = skipCheckbox.checked;
+    localStorage.setItem("skipSplash", skipSplash);
 
     toggleSettings();
     updateSpinButton();
@@ -153,8 +165,14 @@ document.addEventListener("DOMContentLoaded", function () {
     isSpinning = true;
     scroll.innerHTML = "";
 
-    const winner =
-      availableAgents[Math.floor(Math.random() * availableAgents.length)];
+    // Filter out recent winners
+    const eligibleAgents = availableAgents.filter(
+      (agent) => !recentWinners.includes(agent.name)
+    );
+    const winnerPool =
+      eligibleAgents.length > 0 ? eligibleAgents : availableAgents;
+
+    const winner = winnerPool[Math.floor(Math.random() * winnerPool.length)];
     const prefix = shuffle(availableAgents);
     const suffix = shuffle(availableAgents);
     const displayList = [
@@ -197,7 +215,14 @@ document.addEventListener("DOMContentLoaded", function () {
       } else {
         isSpinning = false;
         setTimeout(() => {
-          showWinner(winner);
+          if (!skipSplash) {
+            showWinner(winner);
+          }
+          recentWinners.push(winner.name);
+          if (recentWinners.length >= maxHistory) {
+            recentWinners.shift();
+          }
+          updateRecentDisplay();
           spinButton.disabled = false;
           settingsButton.disabled = false;
         }, 100);
@@ -227,7 +252,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Trigger animations
     setTimeout(() => {
-      document.getElementById("overlay").style.display = "block";
+      // document.getElementById("overlay").style.display = "block";
+      overlay.classList.add("show");
       winnerDisplay.classList.add("show");
       createConfetti();
     }, 10);
@@ -273,7 +299,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     setTimeout(() => {
       winnerDisplay.style.display = "none";
-      document.getElementById("overlay").style.display = "none";
+      overlay.classList.remove("show");
       document.querySelectorAll(".confetti").forEach((el) => el.remove());
     }, 500); // Match this with your longest transition duration
   }
@@ -295,11 +321,54 @@ document.addEventListener("DOMContentLoaded", function () {
       savedAgentNames.includes(agent.name)
     );
   }
+  const savedWinners = localStorage.getItem("recentWinners");
+  if (savedWinners) {
+    recentWinners = JSON.parse(savedWinners);
+  }
+
+  const savedSkip = localStorage.getItem("skipSplash");
+  if (savedSkip) {
+    skipSplash = savedSkip === "true";
+    const skipCheckbox = document.getElementById("skip-splash-checkbox");
+    if (skipCheckbox) skipCheckbox.checked = skipSplash;
+  }
+
   updateSpinButton();
+  updateRecentDisplay();
 
   // Save to localStorage when window is closed
   window.addEventListener("beforeunload", function () {
     const agentNames = availableAgents.map((agent) => agent.name);
     localStorage.setItem("valorantAvailableAgents", JSON.stringify(agentNames));
+    localStorage.setItem("recentWinners", JSON.stringify(recentWinners));
   });
+
+  function updateRecentDisplay() {
+    const container = document.getElementById("recent-agents");
+    container.innerHTML = "";
+
+    recentWinners
+      .slice()
+      .reverse()
+      .forEach((name) => {
+        const agent = agentData.find((a) => a.name === name);
+        if (!agent) return;
+
+        const div = document.createElement("div");
+        div.className = "recent-agent pop-in";
+        div.style.backgroundImage = `url(https://media.valorant-api.com/agents/${agent.uuid}/displayicon.png), url(${fallbackImage})`;
+
+        const label = document.createElement("div");
+        label.className = "recent-agent-name";
+        label.textContent = name;
+
+        div.appendChild(label);
+        container.appendChild(div);
+
+        // Trigger animation
+        requestAnimationFrame(() => {
+          div.classList.add("pop-in-active");
+        });
+      });
+  }
 });

@@ -32,8 +32,27 @@
 
     <div id="overlay"></div>
     <div id="settings-panel">
+      <button id="close-settings" title="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
       <h2>Select Your Agents</h2>
       <div id="agent-selection"></div>
+      <div id="skip-splash-container" class="checkbox-wrapper-8">
+        <input
+          type="checkbox"
+          id="skip-splash-checkbox"
+          class="tgl tgl-skewed"
+        />
+        <label
+          class="tgl-btn"
+          data-tg-off="OFF"
+          data-tg-on="ON"
+          for="skip-splash-checkbox"
+        ></label>
+        <label for="skip-splash-checkbox" id="skip-splash-text"
+          >Skip Winner Splash Screen</label
+        >
+      </div>
       <button id="save-settings">Save Settings</button>
     </div>
 
@@ -41,6 +60,11 @@
       <div id="winner-splash"></div>
       <div id="winner-name"></div>
       <button id="close-winner">Continue</button>
+    </div>
+
+    <div id="recent-history">
+      <h2>Recent Picks</h2>
+      <div id="recent-agents"></div>
     </div>
 
     <div class="footer">
