@@ -219,7 +219,7 @@ document.addEventListener("DOMContentLoaded", function () {
             showWinner(winner);
           }
           recentWinners.push(winner.name);
-          if (recentWinners.length >= maxHistory) {
+          if (recentWinners.length > maxHistory) {
             recentWinners.shift();
           }
           updateRecentDisplay();
