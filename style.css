@@ -1,13 +1,13 @@
 @font-face {
   font-family: "Valorant";
-  src: url("font.ttf") format("truetype");
+  src: url("resources/font.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
 @font-face {
   font-family: "Valorant-text";
-  src: url("font-text.ttf") format("truetype");
+  src: url("resources/font-text.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
@@ -290,7 +290,7 @@ button:disabled {
   top: 0;
   right: 0;
   transform: translateX(100%);
-  width: 680px;
+  width: 780px;
   height: 100vh;
   background-color: #1c1c1c;
   z-index: 150;
@@ -318,12 +318,26 @@ button:disabled {
 #agent-selection {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
-  grid-template-rows: repeat(auto-fill, 105px 105px);
-  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  justify-items: center;
+  /* gap: 10px; */
   overflow: hidden;
   overflow-y: auto;
   padding: 25px;
+}
+
+#agent-selection h3 {
+  margin: 5px;
+  font-size: 27px;
+}
+
+#agents-Controller,
+#agents-Sentinel,
+#agents-Initiator,
+#agents-Duelist {
+  display: flex;
+  gap: 10px;
 }
 
 .agent-checkbox {
@@ -809,4 +823,67 @@ button:disabled {
   text-transform: uppercase;
   letter-spacing: 2px;
   z-index: 1;
+}
+
+.phone {
+  height: 50px;
+  width: 100px;
+  border: 3px solid white;
+  border-radius: 10px;
+  animation: rotate 1.5s ease-in-out infinite alternate;
+  /* display: none; */
+}
+
+.message {
+  color: white;
+  font-size: 1em;
+  margin-top: 40px;
+  /* display: none; */
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-90deg);
+  }
+  100% {
+    transform: rotate(-90deg);
+  }
+}
+
+#screen-too-small {
+  display: none;
+  background-color: #0e0e0e;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: 200;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  top: 0;
+  transition: display 0.5s ease-in-out;
+}
+
+@media only screen and (max-width: 1100px) {
+  #recent-history {
+    bottom: 90px;
+    left: auto;
+  }
+
+  #recent-agents {
+    flex-direction: row;
+  }
+
+  #settings-panel {
+    width: 100%;
+  }
+}
+
+@media only screen and (max-width: 650px) {
+  #screen-too-small {
+    display: flex;
+  }
 }

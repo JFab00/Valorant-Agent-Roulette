@@ -33,15 +33,37 @@ const agentData = [
 const fallbackImage =
   "https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt6577b1f58530e6b2/5eb26f54402b8b4d13a56656/agent.png";
 
+async function fetchAgentRoles() {
+  try {
+    const response = await fetch(
+      "https://valorant-api.com/v1/agents?isPlayableCharacter=true"
+    );
+    const data = await response.json();
+
+    if (data.status === 200) {
+      return data.data.reduce((acc, agent) => {
+        acc[agent.uuid] = agent.role?.displayName || "Unknown";
+        return acc;
+      }, {});
+    }
+    return {};
+  } catch (error) {
+    console.error("Error fetching roles:", error);
+    return {};
+  }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
+  let agentRoles = {};
+  let agentsWithRoles = {};
   let availableAgents = [...agentData];
   let recentWinners = [];
   const maxHistory = 5;
   const scroll = document.getElementById("scroll");
   let isSpinning = false;
   let skipSplash = false;
-  const spinSound = new Audio("spin-sound.mp3");
-  const winSound = new Audio("winner-sound.mp3");
+  const spinSound = new Audio("resources/spin-sound.mp3");
+  const winSound = new Audio("resources/winner-sound.mp3");
   let muteSfx = false;
 
   // DOM elements
@@ -63,10 +85,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Initialize settings panel
   function initializeSettings() {
-    const container = document.getElementById("agent-selection");
-    container.innerHTML = "";
-
-    agentData.forEach((agent) => {
+    agentsWithRoles.forEach((agent) => {
+      let container = document.getElementById(`agents-${agent.role}`);
+      console.log(`agents-${agent.role}`);
       const div = document.createElement("div");
       div.className = `agent-checkbox ${
         availableAgents.some((a) => a.name === agent.name) ? "checked" : ""
@@ -119,7 +140,6 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
       panel.classList.add("open");
       overlay.classList.add("show");
-      initializeSettings();
     }
   }
 
@@ -239,7 +259,7 @@ document.addEventListener("DOMContentLoaded", function () {
             showWinner(winner);
           }
           recentWinners.push(winner.name);
-          if (recentWinners.length >= maxHistory) {
+          if (recentWinners.length > maxHistory) {
             recentWinners.shift();
           }
           updateRecentDisplay();
@@ -366,6 +386,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   updateSpinButton();
   updateRecentDisplay();
+  getRoles();
 
   // Save to localStorage when window is closed
   window.addEventListener("beforeunload", function () {
@@ -373,6 +394,16 @@ document.addEventListener("DOMContentLoaded", function () {
     localStorage.setItem("valorantAvailableAgents", JSON.stringify(agentNames));
     localStorage.setItem("recentWinners", JSON.stringify(recentWinners));
   });
+
+  async function getRoles() {
+    agentRoles = await fetchAgentRoles();
+
+    agentsWithRoles = agentData.map((agent) => ({
+      ...agent,
+      role: agentRoles[agent.uuid] || "Unknown",
+    }));
+    initializeSettings();
+  }
 
   function updateRecentDisplay() {
     const container = document.getElementById("recent-agents");

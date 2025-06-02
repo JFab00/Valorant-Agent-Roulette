@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>Valorant Agent Roulette</title>
-    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="resources/favicon.ico" />
     <link rel="stylesheet" href="style.css" />
     <link
       rel="stylesheet"
@@ -14,6 +14,11 @@
     <script src="script.js"></script>
   </head>
   <body>
+    <div id="screen-too-small">
+      <div class="phone"></div>
+      <div class="message">Please rotate your device!</div>
+    </div>
+
     <button id="settings-button">
       <i class="bi bi-gear" id="cog-icon"></i>
     </button>
@@ -36,7 +41,24 @@
         <i class="bi bi-x-lg"></i>
       </button>
       <h2>Select Your Agents</h2>
-      <div id="agent-selection"></div>
+      <div id="agent-selection">
+        <div id="controller-container">
+          <h3>Controllers</h3>
+          <div id="agents-Controller"></div>
+        </div>
+        <div id="sentinel-container">
+          <h3>Sentinels</h3>
+          <div id="agents-Sentinel"></div>
+        </div>
+        <div id="initiator-container">
+          <h3>Initiators</h3>
+          <div id="agents-Initiator"></div>
+        </div>
+        <div id="duelist-container">
+          <h3>Duelists</h3>
+          <div id="agents-Duelist"></div>
+        </div>
+      </div>
 
       <div id="other-settings">
         <div id="skip-splash-container" class="checkbox-wrapper-8">
