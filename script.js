@@ -1,436 +1,368 @@
-// Agent data with UUIDs (using official Valorant agent icons) https://valorant-uuid-finder.vercel.app/
-const agentData = [
-  { name: "Brimstone", uuid: "9f0d8ba9-4140-b941-57d3-a7ad57c6b417" },
-  { name: "Viper", uuid: "707eab51-4836-f488-046a-cda6bf494859" },
-  { name: "Omen", uuid: "8e253930-4c05-31dd-1b6c-968525494517" },
-  { name: "Killjoy", uuid: "1e58de9c-4950-5125-93e9-a0aee9f98746" },
-  { name: "Cypher", uuid: "117ed9e3-49f3-6512-3ccf-0cada7e3823b" },
-  { name: "Sova", uuid: "320b2a48-4d9b-a075-30f1-1f93a9b638fa" },
-  { name: "Sage", uuid: "569fdd95-4d10-43ab-ca70-79becc718b46" },
-  { name: "Phoenix", uuid: "eb93336a-449b-9c1b-0a54-a891f7921d69" },
-  { name: "Jett", uuid: "add6443a-41bd-e414-f6ad-e58d267f4e95" },
-  { name: "Reyna", uuid: "a3bfb853-43b2-7238-a4f1-ad90e9e46bcc" },
-  { name: "Raze", uuid: "f94c3b30-42be-e959-889c-5aa313dba261" },
-  { name: "Breach", uuid: "5f8d3a7f-467b-97f3-062c-13acf203c006" },
-  { name: "Skye", uuid: "6f2a04ca-43e0-be17-7f36-b3908627744d" },
-  { name: "Yoru", uuid: "7f94d92c-4234-0a36-9646-3a87eb8b5c89" },
-  { name: "Astra", uuid: "41fb69c1-4189-7b37-f117-bcaf1e96f1bf" },
-  { name: "KAY/O", uuid: "601dbbe7-43ce-be57-2a40-4abd24953621" },
-  { name: "Chamber", uuid: "22697a3d-45bf-8dd7-4fec-84a9e28c69d7" },
-  { name: "Neon", uuid: "bb2a4828-46eb-8cd1-e765-15848195d751" },
-  { name: "Fade", uuid: "dade69b4-4f5a-8528-247b-219e5a1facd6" },
-  { name: "Harbor", uuid: "95b78ed7-4637-86d9-7e41-71ba8c293152" },
-  { name: "Gekko", uuid: "e370fa57-4757-3604-3648-499e1f642d3f" },
-  { name: "Deadlock", uuid: "cc8b64c8-4b25-4ff9-6e7f-37b4da43d235" },
-  { name: "Iso", uuid: "0e38b510-41a8-5780-5e8f-568b2a4f2d6c" },
-  { name: "Clove", uuid: "1dbf2edd-4729-0984-3115-daa5eed44993" },
-  { name: "Vyse", uuid: "efba5359-4016-a1e5-7626-b1ae76895940" },
-  { name: "Waylay", uuid: "df1cb487-4902-002e-5c17-d28e83e78588" },
-  { name: "Tejo", uuid: "b444168c-4e35-8076-db47-ef9bf368f384" },
-];
-
 // Fallback image for when API images fail to load
 const fallbackImage =
   "https://images.contentstack.io/v3/assets/bltb6530b271fddd0b1/blt6577b1f58530e6b2/5eb26f54402b8b4d13a56656/agent.png";
 
-async function fetchAgentRoles() {
-  try {
-    const response = await fetch(
-      "https://valorant-api.com/v1/agents?isPlayableCharacter=true"
-    );
-    const data = await response.json();
+let agentData = [];
+let availableAgents = [];
+let recentWinners = [];
+const maxHistory = 5;
+let isSpinning = false;
+let skipSplash = false;
+let muteSfx = false;
 
-    if (data.status === 200) {
-      return data.data.reduce((acc, agent) => {
-        acc[agent.uuid] = agent.role?.displayName || "Unknown";
-        return acc;
-      }, {});
-    }
-    return {};
-  } catch (error) {
-    console.error("Error fetching roles:", error);
-    return {};
+let scroll, spinSound, winSound;
+
+function updateCheckboxState(container, checkbox) {
+  container.classList.toggle("checked", checkbox.checked);
+}
+
+function toggleSettings() {
+  const panel = document.getElementById("settings-panel");
+  applyWinnerGradientOverlay([]);
+  panel.classList.toggle("open");
+  const overlay = document.getElementById("overlay");
+  overlay.classList.toggle("show");
+}
+
+function saveSettings() {
+  availableAgents = [];
+  agentData.forEach((agent) => {
+    const checkbox = document.getElementById(`agent-${agent.name}`);
+    if (checkbox?.checked) availableAgents.push(agent);
+  });
+  if (availableAgents.length === 0)
+    return alert("Please select at least one agent!");
+  skipSplash = document.getElementById("skip-splash-checkbox")?.checked;
+  muteSfx = document.getElementById("mute-sfx-checkbox")?.checked;
+  localStorage.setItem("skipSplash", skipSplash);
+  localStorage.setItem("muteSfx", muteSfx);
+  toggleSettings();
+  updateSpinButton();
+}
+
+function updateSpinButton() {
+  const spinButton = document.getElementById("spin-button");
+  spinButton.disabled = availableAgents.length === 0;
+}
+
+function updateCheckboxState(container, checkbox) {
+  container.classList.toggle("checked", checkbox.checked);
+}
+
+function easeOutCubic(t) {
+  return 1 - Math.pow(1 - t, 3);
+}
+
+function shuffle(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function getAgentUUID(agentName) {
+  const agent = agentData.find((a) => a.name === agentName);
+  return agent ? agent.uuid : "";
+}
+
+function hexToRgb(hex) {
+  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(
+    result[3],
+    16
+  )}`;
+}
+
+function applyWinnerGradientOverlay(colors) {
+  const overlay = document.getElementById("overlay");
+  if (colors.length >= 4) {
+    const rgbaStops = colors
+      .map((hex, i) => `rgba(${hexToRgb(hex)}, 0.3) ${i * 33}%`)
+      .join(", ");
+    overlay.style.background = `linear-gradient(90deg, ${rgbaStops})`;
+  } else {
+    overlay.style.background = "rgba(0, 0, 0, 0.85)";
   }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-  let agentRoles = {};
-  let agentsWithRoles = {};
-  let availableAgents = [...agentData];
-  let recentWinners = [];
-  const maxHistory = 5;
-  const scroll = document.getElementById("scroll");
-  let isSpinning = false;
-  let skipSplash = false;
-  const spinSound = new Audio("resources/spin-sound.mp3");
-  const winSound = new Audio("resources/winner-sound.mp3");
-  let muteSfx = false;
+async function fetchAgentData() {
+  try {
+    const res = await fetch(
+      "https://valorant-api.com/v1/agents?isPlayableCharacter=true"
+    );
+    const json = await res.json();
+    return json.data.map((agent) => ({
+      name: agent.displayName,
+      uuid: agent.uuid,
+      role: agent.role?.displayName || "Unknown",
+      displayIcon: agent.displayIcon,
+      splash: agent.fullPortrait,
+      backgroundGradientColors: (agent.backgroundGradientColors || []).map(
+        (color) => color.slice(0, 6)
+      ),
+      backgroundImage: agent.background,
+    }));
+  } catch (err) {
+    console.error("Error fetching agent data:", err);
+    return [];
+  }
+}
 
-  // DOM elements
+function initializeSettings() {
+  agentData.forEach((agent) => {
+    const container = document.getElementById(`agents-${agent.role}`);
+    if (!container) return;
+    const div = document.createElement("div");
+    div.className = `agent-checkbox ${
+      availableAgents.some((a) => a.name === agent.name) ? "checked" : ""
+    }`;
+    div.innerHTML = `
+      <img src="${agent.displayIcon}" alt="${
+      agent.name
+    }" onerror="this.src='${fallbackImage}'">
+      <div class="agent-label">${agent.name}</div>
+      <input type="checkbox" id="agent-${agent.name}" ${
+      availableAgents.some((a) => a.name === agent.name) ? "checked" : ""
+    }>
+    `;
+    const checkbox = div.querySelector("input");
+    div.addEventListener("click", (e) => {
+      if (e.target !== checkbox) {
+        checkbox.checked = !checkbox.checked;
+        updateCheckboxState(div, checkbox);
+        e.preventDefault();
+      }
+    });
+    checkbox.addEventListener("change", () =>
+      updateCheckboxState(div, checkbox)
+    );
+    container.appendChild(div);
+  });
+}
+
+function updateRecentDisplay() {
+  const container = document.getElementById("recent-agents");
+  container.innerHTML = "";
+  recentWinners
+    .slice()
+    .reverse()
+    .forEach((name) => {
+      const agent = agentData.find((a) => a.name === name);
+      if (!agent) return;
+      const div = document.createElement("div");
+      div.className = "recent-agent pop-in";
+      div.style.backgroundImage = `url(${agent.displayIcon}), url(${fallbackImage})`;
+      const label = document.createElement("div");
+      label.className = "recent-agent-name";
+      label.textContent = name;
+      div.appendChild(label);
+      container.appendChild(div);
+      requestAnimationFrame(() => {
+        div.classList.add("pop-in-active");
+      });
+    });
+}
+
+function createConfetti(colors) {
+  const container = document.getElementById("winner-display");
+  // const colors = ["#ff4655", "#ffffff", "#0f1923", "#ece8e1"];
+  for (let i = 0; i < 150; i++) {
+    const confetti = document.createElement("div");
+    confetti.className = "confetti";
+    confetti.style.left = Math.random() * 100 + "vw";
+    confetti.style.top = "-10px";
+    confetti.style.backgroundColor = `#${
+      colors[Math.floor(Math.random() * colors.length)]
+    }`;
+    confetti.style.width = Math.random() * 10 + 5 + "px";
+    confetti.style.height = Math.random() * 10 + 5 + "px";
+    confetti.style.animationDelay = Math.random() * 2 + "s";
+    confetti.style.animationDuration = Math.random() * 3 + 2 + "s";
+    if (Math.random() > 0.5) confetti.style.borderRadius = "50%";
+    else if (Math.random() > 0.7)
+      confetti.style.clipPath = "polygon(50% 0%, 0% 100%, 100% 100%)";
+    container.appendChild(confetti);
+  }
+}
+
+function closeWinner() {
+  const winnerDisplay = document.getElementById("winner-display");
+  winnerDisplay.classList.remove("show");
+  setTimeout(() => {
+    winnerDisplay.style.display = "none";
+    const overlay = document.getElementById("overlay");
+    overlay.classList.remove("show");
+    document.querySelectorAll(".confetti").forEach((el) => el.remove());
+  }, 500);
+}
+
+function showWinner(winner) {
+  console.log(winner);
+  const winnerDisplay = document.getElementById("winner-display");
+  const winnerSplash = document.getElementById("winner-splash");
+  const winnerName = document.getElementById("winner-name");
+  const winnerBG = document.getElementById("winner-background-image");
+  const closeButton = document.getElementById("close-winner");
+  winnerDisplay.style.display = "flex";
+  winnerDisplay.classList.remove("show");
+  void winnerDisplay.offsetHeight;
+  winnerSplash.style.backgroundImage = `url(${winner.splash}), url(${fallbackImage})`;
+  winnerBG.style.backgroundImage = `url(${winner.backgroundImage}), url(${fallbackImage})`;
+  winnerName.textContent = winner.name;
+  winnerName.style.textShadow = ` 0 0 10px #${winner.backgroundGradientColors[0]}, 0 0 20px #${winner.backgroundGradientColors[0]}, 0 0 30px #${winner.backgroundGradientColors[0]}`;
+  // text-shadow: 0 0 10px #ff4655, 0 0 20px #ff4655, 0 0 30px #ff4655;
+  closeButton.style.backgroundColor = `#${winner.backgroundGradientColors[0]}`;
+  closeButton.style.boxShadow = ` 0 0 20px #${winner.backgroundGradientColors[0]}`;
+  // box-shadow: 0 0 20px rgba(255, 70, 85, 0.6);
+  setTimeout(() => {
+    const overlay = document.getElementById("overlay");
+    applyWinnerGradientOverlay(winner.backgroundGradientColors);
+    overlay.classList.add("show");
+    winnerDisplay.classList.add("show");
+    createConfetti(winner.backgroundGradientColors);
+  }, 10);
+}
+
+function startRoulette() {
+  const spinButton = document.getElementById("spin-button");
+  const settingsButton = document.getElementById("settings-button");
+
+  if (isSpinning || availableAgents.length === 0) return;
+  spinButton.disabled = true;
+  settingsButton.disabled = true;
+  isSpinning = true;
+  scroll.innerHTML = "";
+
+  if (!muteSfx) {
+    spinSound.currentTime = 0;
+    spinSound.loop = true;
+    spinSound.volume = 0.3;
+    spinSound.play().catch(console.warn);
+  }
+
+  const eligible = availableAgents.filter(
+    (a) => !recentWinners.includes(a.name)
+  );
+  const winnerPool = eligible.length > 0 ? eligible : availableAgents;
+
+  const winner = winnerPool[Math.floor(Math.random() * winnerPool.length)];
+  const prefix = shuffle(availableAgents);
+  const suffix = shuffle(availableAgents);
+  const displayList = [
+    ...prefix,
+    ...shuffle(availableAgents),
+    winner,
+    ...suffix,
+  ];
+
+  displayList.forEach((agent) => {
+    const div = document.createElement("div");
+    div.className = "agent";
+    div.style.backgroundImage = `url(${agent.displayIcon}), url(${fallbackImage})`;
+    div.innerHTML = `<div class="agent-name">${agent.name}</div>`;
+    scroll.appendChild(div);
+  });
+
+  const itemWidth = 123.97;
+  // const winnerIndex = Math.floor(displayList.indexOf(winner));
+  const winnerIndex = prefix.length + availableAgents.length;
+  const containerCenter = 302;
+  const targetOffset =
+    winnerIndex * itemWidth + itemWidth / 2 - containerCenter;
+
+  const duration = 3500;
+  const startTime = performance.now();
+
+  function animate(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const position = targetOffset * easeOutCubic(progress);
+
+    scroll.style.left = `-${position}px`;
+
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      spinSound.pause();
+      spinSound.currentTime = 0;
+
+      if (!muteSfx) {
+        winSound.currentTime = 0;
+        winSound.volume = 0.6;
+        winSound.play().catch(console.warn);
+      }
+
+      isSpinning = false;
+      setTimeout(() => {
+        if (!skipSplash) showWinner(winner);
+        recentWinners.push(winner.name);
+        if (recentWinners.length > maxHistory) recentWinners.shift();
+
+        updateRecentDisplay();
+        spinButton.disabled = false;
+        settingsButton.disabled = false;
+      }, 100);
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+async function initializeApp() {
+  agentData = await fetchAgentData();
+  console.log(agentData);
+  if (agentData.length === 0) {
+    alert("Failed to load agents. Please check your internet connection.");
+    return;
+  }
+  const savedAgents = localStorage.getItem("valorantAvailableAgents");
+  if (savedAgents) {
+    const names = JSON.parse(savedAgents);
+    availableAgents = agentData.filter((agent) => names.includes(agent.name));
+  } else {
+    availableAgents = [...agentData];
+  }
+  const savedWinners = localStorage.getItem("recentWinners");
+  if (savedWinners) recentWinners = JSON.parse(savedWinners);
+  const savedSkip = localStorage.getItem("skipSplash");
+  if (savedSkip) skipSplash = savedSkip === "true";
+  const skipCheckbox = document.getElementById("skip-splash-checkbox");
+  if (skipCheckbox) skipCheckbox.checked = skipSplash;
+  const savedMute = localStorage.getItem("muteSfx");
+  if (savedMute) muteSfx = savedMute === "true";
+  const muteCheckbox = document.getElementById("mute-sfx-checkbox");
+  if (muteCheckbox) muteCheckbox.checked = muteSfx;
+  initializeSettings();
+  updateSpinButton();
+  updateRecentDisplay();
+}
+
+window.addEventListener("beforeunload", () => {
+  const agentNames = availableAgents.map((a) => a.name);
+  localStorage.setItem("valorantAvailableAgents", JSON.stringify(agentNames));
+  localStorage.setItem("recentWinners", JSON.stringify(recentWinners));
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  scroll = document.getElementById("scroll");
+  spinSound = new Audio("resources/spin-sound.mp3");
+  winSound = new Audio("resources/winner-sound.mp3");
+
   const settingsButton = document.getElementById("settings-button");
   const spinButton = document.getElementById("spin-button");
   const saveSettingsButton = document.getElementById("save-settings");
   const closeWinnerButton = document.getElementById("close-winner");
   const overlay = document.getElementById("overlay");
 
-  // Event listeners
-  settingsButton.addEventListener("click", toggleSettings);
-  spinButton.addEventListener("click", startRoulette);
-  saveSettingsButton.addEventListener("click", saveSettings);
-  closeWinnerButton.addEventListener("click", closeWinner);
-  overlay.addEventListener("click", toggleSettings);
+  settingsButton?.addEventListener("click", toggleSettings);
+  spinButton?.addEventListener("click", startRoulette);
+  saveSettingsButton?.addEventListener("click", saveSettings);
+  closeWinnerButton?.addEventListener("click", closeWinner);
+  overlay?.addEventListener("click", toggleSettings);
   document
     .getElementById("close-settings")
-    .addEventListener("click", toggleSettings);
+    ?.addEventListener("click", toggleSettings);
 
-  // Initialize settings panel
-  function initializeSettings() {
-    agentsWithRoles.forEach((agent) => {
-      let container = document.getElementById(`agents-${agent.role}`);
-      console.log(`agents-${agent.role}`);
-      const div = document.createElement("div");
-      div.className = `agent-checkbox ${
-        availableAgents.some((a) => a.name === agent.name) ? "checked" : ""
-      }`;
-      div.innerHTML = `
-      <img src="https://media.valorant-api.com/agents/${
-        agent.uuid
-      }/displayicon.png" alt="${
-        agent.name
-      }" onerror="this.src='${fallbackImage}'">
-      <div class="agent-label">${agent.name}</div>
-      <input type="checkbox" id="agent-${agent.name}" ${
-        availableAgents.some((a) => a.name === agent.name) ? "checked" : ""
-      }>
-    `;
-
-      // Get the checkbox element
-      const checkbox = div.querySelector("input");
-
-      // Handle clicks on the entire card
-      div.addEventListener("click", function (e) {
-        // Prevent double triggers when clicking directly on the checkbox
-        if (e.target !== checkbox) {
-          checkbox.checked = !checkbox.checked;
-          updateCheckboxState(div, checkbox);
-          e.preventDefault(); // Prevent any default behavior
-        }
-      });
-
-      // Also handle checkbox changes directly
-      checkbox.addEventListener("change", function () {
-        updateCheckboxState(div, this);
-      });
-
-      container.appendChild(div);
-    });
-  }
-
-  // Helper function to update visual state
-  function updateCheckboxState(container, checkbox) {
-    container.classList.toggle("checked", checkbox.checked);
-  }
-
-  function toggleSettings() {
-    const panel = document.getElementById("settings-panel");
-    console.log("is it contained > ", panel.classList.contains("open"));
-    if (panel.classList.contains("open")) {
-      panel.classList.remove("open");
-      overlay.classList.remove("show");
-    } else {
-      panel.classList.add("open");
-      overlay.classList.add("show");
-    }
-  }
-
-  // Save selected agents
-  function saveSettings() {
-    availableAgents = [];
-    agentData.forEach((agent) => {
-      const checkbox = document.getElementById(`agent-${agent.name}`);
-      if (checkbox.checked) {
-        availableAgents.push(agent);
-      }
-    });
-
-    // Ensure at least one agent is selected
-    if (availableAgents.length === 0) {
-      alert("Please select at least one agent!");
-      return;
-    }
-
-    const skipCheckbox = document.getElementById("skip-splash-checkbox");
-    skipSplash = skipCheckbox.checked;
-    localStorage.setItem("skipSplash", skipSplash);
-
-    const muteCheckbox = document.getElementById("mute-sfx-checkbox");
-    muteSfx = muteCheckbox.checked;
-    localStorage.setItem("muteSfx", muteSfx);
-
-    toggleSettings();
-    updateSpinButton();
-  }
-
-  function shuffle(array) {
-    const arr = [...array];
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  }
-
-  function startRoulette() {
-    if (isSpinning || availableAgents.length === 0) return;
-
-    // Disable spin button and settings button during animation
-    spinButton.disabled = true;
-    settingsButton.disabled = true;
-    isSpinning = true;
-    scroll.innerHTML = "";
-
-    if (!muteSfx) {
-      spinSound.currentTime = 0;
-      spinSound.loop = true;
-      spinSound.volume = 0.3;
-      spinSound.play().catch((e) => console.warn("Spin sound error:", e));
-    }
-
-    // Filter out recent winners
-    const eligibleAgents = availableAgents.filter(
-      (agent) => !recentWinners.includes(agent.name)
-    );
-    const winnerPool =
-      eligibleAgents.length > 0 ? eligibleAgents : availableAgents;
-
-    const winner = winnerPool[Math.floor(Math.random() * winnerPool.length)];
-    const prefix = shuffle(availableAgents);
-    const suffix = shuffle(availableAgents);
-    const displayList = [
-      ...prefix,
-      ...shuffle(availableAgents),
-      winner,
-      ...suffix,
-    ];
-
-    displayList.forEach((agent) => {
-      const div = document.createElement("div");
-      div.className = "agent";
-      div.style.backgroundImage = `url(https://media.valorant-api.com/agents/${agent.uuid}/displayicon.png), url(${fallbackImage})`;
-      div.innerHTML = `<div class="agent-name">${agent.name}</div>`;
-      // Add error handling for the background image
-      div.onerror = function () {
-        this.style.backgroundImage = `url(${fallbackImage})`;
-      };
-      scroll.appendChild(div);
-    });
-
-    const itemWidth = 123.97; // Width + margin of each agent item
-    const winnerIndex = prefix.length + availableAgents.length;
-    const containerCenter = 302; // Half of #roulette-container width (604px)
-    const targetOffset =
-      winnerIndex * itemWidth + itemWidth / 2 - containerCenter;
-
-    const duration = 3500; // animation duration in milliseconds
-    const startTime = performance.now();
-
-    function animate(currentTime) {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const position = targetOffset * easeOutCubic(progress);
-
-      scroll.style.left = `-${position}px`;
-
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        spinSound.pause();
-        spinSound.currentTime = 0;
-
-        if (!muteSfx) {
-          winSound.currentTime = 0;
-          winSound.volume = 0.6;
-          winSound.play().catch((e) => console.warn("Win sound error:", e));
-        }
-
-        isSpinning = false;
-        setTimeout(() => {
-          if (!skipSplash) {
-            showWinner(winner);
-          }
-          recentWinners.push(winner.name);
-          if (recentWinners.length > maxHistory) {
-            recentWinners.shift();
-          }
-          updateRecentDisplay();
-          spinButton.disabled = false;
-          settingsButton.disabled = false;
-        }, 100);
-      }
-    }
-
-    requestAnimationFrame(animate);
-  }
-
-  function showWinner(winner) {
-    const winnerDisplay = document.getElementById("winner-display");
-    const winnerSplash = document.getElementById("winner-splash");
-    const winnerName = document.getElementById("winner-name");
-
-    // Reset initial state
-    winnerDisplay.style.display = "flex";
-    winnerDisplay.classList.remove("show");
-
-    // Force reflow to enable animation
-    void winnerDisplay.offsetHeight;
-
-    // Set content
-    winnerSplash.style.backgroundImage = `url(https://media.valorant-api.com/agents/${getAgentUUID(
-      winner.name
-    )}/fullportrait.png), url(${fallbackImage})`;
-    winnerName.textContent = winner.name;
-
-    // Trigger animations
-    setTimeout(() => {
-      // document.getElementById("overlay").style.display = "block";
-      overlay.classList.add("show");
-      winnerDisplay.classList.add("show");
-      createConfetti();
-    }, 10);
-  }
-
-  // Helper function to get agent UUID
-  function getAgentUUID(agentName) {
-    const agent = agentData.find((a) => a.name === agentName);
-    return agent ? agent.uuid : "";
-  }
-
-  // Confetti effect
-  function createConfetti() {
-    const container = document.getElementById("winner-display");
-    const colors = ["#ff4655", "#ffffff", "#0f1923", "#ece8e1"];
-
-    for (let i = 0; i < 150; i++) {
-      const confetti = document.createElement("div");
-      confetti.className = "confetti";
-      confetti.style.left = Math.random() * 100 + "vw";
-      confetti.style.top = "-10px"; // Start above the viewport
-      confetti.style.backgroundColor =
-        colors[Math.floor(Math.random() * colors.length)];
-      confetti.style.width = Math.random() * 10 + 5 + "px";
-      confetti.style.height = Math.random() * 10 + 5 + "px";
-      confetti.style.animationDelay = Math.random() * 2 + "s";
-      confetti.style.animationDuration = Math.random() * 3 + 2 + "s";
-
-      // Random shapes
-      if (Math.random() > 0.5) {
-        confetti.style.borderRadius = "50%";
-      } else if (Math.random() > 0.7) {
-        confetti.style.clipPath = "polygon(50% 0%, 0% 100%, 100% 100%)";
-      }
-
-      container.appendChild(confetti);
-    }
-  }
-
-  function closeWinner() {
-    const winnerDisplay = document.getElementById("winner-display");
-    winnerDisplay.classList.remove("show");
-
-    setTimeout(() => {
-      winnerDisplay.style.display = "none";
-      overlay.classList.remove("show");
-      document.querySelectorAll(".confetti").forEach((el) => el.remove());
-    }, 500); // Match this with your longest transition duration
-  }
-
-  function updateSpinButton() {
-    spinButton.disabled = availableAgents.length === 0;
-  }
-
-  // Easing function for smooth deceleration
-  function easeOutCubic(t) {
-    return 1 - Math.pow(1 - t, 3);
-  }
-
-  // Initialize on load
-  const savedAgents = localStorage.getItem("valorantAvailableAgents");
-  if (savedAgents) {
-    const savedAgentNames = JSON.parse(savedAgents);
-    availableAgents = agentData.filter((agent) =>
-      savedAgentNames.includes(agent.name)
-    );
-  }
-  const savedWinners = localStorage.getItem("recentWinners");
-  if (savedWinners) {
-    recentWinners = JSON.parse(savedWinners);
-  }
-
-  const savedSkip = localStorage.getItem("skipSplash");
-  if (savedSkip) {
-    skipSplash = savedSkip === "true";
-    const skipCheckbox = document.getElementById("skip-splash-checkbox");
-    if (skipCheckbox) skipCheckbox.checked = skipSplash;
-  }
-
-  const savedMute = localStorage.getItem("muteSfx");
-  if (savedMute) {
-    muteSfx = savedMute === "true";
-    const muteCheckbox = document.getElementById("mute-sfx-checkbox");
-    if (muteCheckbox) muteCheckbox.checked = muteSfx;
-
-    // Optional: style toggle correctly
-    const container = muteCheckbox.closest(".checkbox-toggle");
-    container?.classList.toggle("checked", muteSfx);
-  }
-
-  updateSpinButton();
-  updateRecentDisplay();
-  getRoles();
-
-  // Save to localStorage when window is closed
-  window.addEventListener("beforeunload", function () {
-    const agentNames = availableAgents.map((agent) => agent.name);
-    localStorage.setItem("valorantAvailableAgents", JSON.stringify(agentNames));
-    localStorage.setItem("recentWinners", JSON.stringify(recentWinners));
-  });
-
-  async function getRoles() {
-    agentRoles = await fetchAgentRoles();
-
-    agentsWithRoles = agentData.map((agent) => ({
-      ...agent,
-      role: agentRoles[agent.uuid] || "Unknown",
-    }));
-    initializeSettings();
-  }
-
-  function updateRecentDisplay() {
-    const container = document.getElementById("recent-agents");
-    container.innerHTML = "";
-
-    recentWinners
-      .slice()
-      .reverse()
-      .forEach((name) => {
-        const agent = agentData.find((a) => a.name === name);
-        if (!agent) return;
-
-        const div = document.createElement("div");
-        div.className = "recent-agent pop-in";
-        div.style.backgroundImage = `url(https://media.valorant-api.com/agents/${agent.uuid}/displayicon.png), url(${fallbackImage})`;
-
-        const label = document.createElement("div");
-        label.className = "recent-agent-name";
-        label.textContent = name;
-
-        div.appendChild(label);
-        container.appendChild(div);
-
-        // Trigger animation
-        requestAnimationFrame(() => {
-          div.classList.add("pop-in-active");
-        });
-      });
-  }
+  initializeApp();
 });
