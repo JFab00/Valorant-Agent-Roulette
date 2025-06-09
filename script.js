@@ -99,6 +99,7 @@ async function fetchAgentData() {
       role: agent.role?.displayName || "Unknown",
       displayIcon: agent.displayIcon,
       splash: agent.fullPortrait,
+      abilities: agent.abilities,
       backgroundGradientColors: (agent.backgroundGradientColors || []).map(
         (color) => color.slice(0, 6)
       ),
@@ -205,17 +206,78 @@ function showWinner(winner) {
   const winnerName = document.getElementById("winner-name");
   const winnerBG = document.getElementById("winner-background-image");
   const closeButton = document.getElementById("close-winner");
+
+  // Visuals
   winnerDisplay.style.display = "flex";
   winnerDisplay.classList.remove("show");
   void winnerDisplay.offsetHeight;
+
   winnerSplash.style.backgroundImage = `url(${winner.splash}), url(${fallbackImage})`;
+  // winnerSplash.src = `${winner.splash}`;
   winnerBG.style.backgroundImage = `url(${winner.backgroundImage}), url(${fallbackImage})`;
-  winnerName.textContent = winner.name;
+
+  // winnerName.textContent = winner.name;
+  winnerName.innerHTML = `<p>${winner.name}</p><hr /><span>${winner.role}</span>`;
   winnerName.style.textShadow = ` 0 0 10px #${winner.backgroundGradientColors[0]}, 0 0 20px #${winner.backgroundGradientColors[0]}, 0 0 30px #${winner.backgroundGradientColors[0]}`;
-  // text-shadow: 0 0 10px #ff4655, 0 0 20px #ff4655, 0 0 30px #ff4655;
   closeButton.style.backgroundColor = `#${winner.backgroundGradientColors[0]}`;
   closeButton.style.boxShadow = ` 0 0 20px #${winner.backgroundGradientColors[0]}`;
-  // box-shadow: 0 0 20px rgba(255, 70, 85, 0.6);
+
+  // Abilities
+  const abilityKeys = ["one", "two", "three", "four"];
+  const abilityKeyBind = ["Q", "E", "C", "X"];
+  const abilities = winner.abilities || [];
+
+  for (let i = 0; i < 4; i++) {
+    const ability = abilities[i];
+    const key = abilityKeys[i];
+
+    const textEl = document.getElementById(`ability_text_${key}`);
+    const detailEl = document.getElementById(`ability_details_${key}`);
+
+    if (ability) {
+      const name = ability.displayName || ability.slot || `Ability ${i + 1}`;
+      const icon = ability.displayIcon || "";
+
+      // Set content with icon + name
+      textEl.innerHTML = `
+      <img src="${icon}" alt="${name}" style="width: 40px; height: 40px; display: block; margin: 0 auto 5px;" />
+      <p>${abilityKeyBind[i]}</p>
+    `;
+
+      // detailEl.textContent = ability.description || "No description available.";
+      detailEl.innerHTML = `<p>${name}</p><span>${
+        ability.description || "No description available."
+      }</span>`;
+      //   `
+      //   <img src="${icon}" alt="${name}" style="width: 40px; height: 40px; display: block; margin: 0 auto 5px;" />
+      //   <p></p>
+      // `;
+    } else {
+      textEl.innerHTML = "";
+      detailEl.textContent = "";
+    }
+
+    detailEl.style.display = "none";
+
+    textEl.onclick = () => {
+      for (let j = 0; j < 4; j++) {
+        const allDetails = document.getElementById(
+          `ability_details_${abilityKeys[j]}`
+        );
+        const allText = document.getElementById(
+          `ability_text_${abilityKeys[j]}`
+        );
+        allDetails.style.display = j === i ? "block" : "none";
+        allText?.classList.toggle("active", j === i);
+      }
+    };
+
+    if (i === 0) {
+      detailEl.style.display = "block";
+      textEl.classList.add("active");
+    }
+  }
+
   setTimeout(() => {
     const overlay = document.getElementById("overlay");
     applyWinnerGradientOverlay(winner.backgroundGradientColors);
@@ -342,6 +404,29 @@ window.addEventListener("beforeunload", () => {
   const agentNames = availableAgents.map((a) => a.name);
   localStorage.setItem("valorantAvailableAgents", JSON.stringify(agentNames));
   localStorage.setItem("recentWinners", JSON.stringify(recentWinners));
+});
+
+document.addEventListener("keydown", (event) => {
+  // Check if spacebar was pressed
+  if (event.code === "Space") {
+    // Prevent spacebar from scrolling the page
+    event.preventDefault();
+
+    // Don't trigger if spinning is already in progress
+    if (isSpinning) return;
+
+    // Optional: check if a modal or overlay is open
+    const overlay = document.getElementById("overlay");
+    const settingsPanel = document.getElementById("settings-panel");
+    if (
+      overlay?.classList.contains("show") ||
+      settingsPanel?.classList.contains("open")
+    )
+      return;
+
+    // Trigger the spin
+    startRoulette();
+  }
 });
 
 document.addEventListener("DOMContentLoaded", () => {

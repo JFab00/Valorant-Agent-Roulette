@@ -1,0 +1,280 @@
+#winner-display {
+  position: fixed;
+  top: -20px;
+  left: 0;
+  width: 100%;
+  height: 98%;
+  display: none;
+  flex-direction: row;
+  // align-items: center;
+  justify-content: center;
+  z-index: 200;
+  overflow: hidden;
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 0.5s ease-out,
+    transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  justify-content: flex-end;
+  padding-bottom: 20px;
+
+  #winner-info-container,
+  #winner-abilities-container {
+    width: 40%;
+  }
+
+  #winner-abilities-container {
+    display: flex;
+    margin-top: 14%;
+    align-items: stretch;
+    margin-right: 10px;
+  }
+
+  #winner-abilities-box {
+    // grid-column: span 5 / span 5;
+    // grid-row: span 3 / span 3;
+    // grid-row-start: 2;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+
+    hr {
+      border: 0;
+      height: 1px;
+      width: 100%;
+      background-image: linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0),
+        rgb(255 255 255 / 75%),
+        rgba(0, 0, 0, 0)
+      );
+    }
+
+    #winner-abilities-top,
+    #winner-abilities-bottom {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      flex-direction: row;
+      text-align: left;
+    }
+
+    #winner-abilities-bottom {
+      letter-spacing: 1px;
+      font-size: 20px;
+      text-transform: none;
+    }
+
+    #winner-abilities-top {
+      letter-spacing: 1px;
+
+      #ability_text_one,
+      #ability_text_two,
+      #ability_text_three,
+      #ability_text_four {
+        width: 25%;
+        // background: linear-gradient(
+        //   0deg,
+        //   rgba(255, 255, 255, 0) 0%,
+        //   rgba(255, 255, 255, 0.3) 100%
+        // );
+        // border-top: 2px solid white;
+        display: flex;
+        flex-direction: column;
+        align-content: center;
+        justify-content: center;
+        align-items: center;
+        margin: 6px;
+
+        img {
+          padding: 6px;
+          margin: 5px !important;
+        }
+        p {
+          box-sizing: border-box;
+          background-color: rgba(255, 255, 255, 0.1);
+          padding: 6px;
+          letter-spacing: 1px;
+          font-size: 16px;
+          width: 100%;
+          text-align: center;
+          text-wrap: nowrap;
+          margin: 0;
+        }
+
+        &.active {
+          background: linear-gradient(
+            0deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.3) 100%
+          );
+          border-top: 2px solid white;
+
+          p {
+            background-color: rgba(255, 255, 255, 0.3);
+          }
+        }
+      }
+    }
+  }
+
+  #winner-splash-container {
+    width: inherit;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  &.show {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  &.show #winner-splash {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  &.show #winner-name {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  &.show #close-winner {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  #winner-splash {
+    // width: 100%;
+    // height: 880px;
+    // top: 0;
+    // background-size: contain;
+    // background-position: center;
+    // background-repeat: no-repeat;
+    // position: relative;
+    // display: flex;
+    // flex-direction: column;
+    // align-items: center;
+    // justify-content: flex-end;
+
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    position: absolute;
+    left: 0;
+    pointer-events: none;
+
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out 0.3s, transform 0.6s ease-out 0.3s;
+  }
+
+  #winner-info-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #winner-name {
+    text-transform: uppercase;
+    z-index: 2;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease-out 0.5s, transform 0.5s ease-out 0.5s,
+      text-shadow 0.3s ease;
+
+    span {
+      text-shadow: none;
+      font-size: 1.5em;
+    }
+
+    hr {
+      border: 0;
+      height: 1px;
+      width: 100%;
+      background-image: linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0),
+        rgb(255 255 255 / 75%),
+        rgba(0, 0, 0, 0)
+      );
+    }
+
+    p {
+      font-size: 5em;
+      font-weight: bold;
+      color: white;
+      letter-spacing: 3px;
+      // padding: 0px 30px;
+      margin: 0;
+    }
+  }
+
+  #winner-background-image {
+    top: 0px;
+    opacity: 0.3;
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+    position: absolute;
+    left: 0;
+    pointer-events: none;
+  }
+
+  #close-winner {
+    position: absolute;
+    // top: -90px;
+    bottom: 40px;
+    padding: 10px 40px;
+    font-size: 1.2em;
+    background-color: #ff4655;
+    color: white;
+    cursor: pointer;
+    z-index: 2;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: all 0.3s;
+    box-shadow: 0 0 20px rgba(255, 70, 85, 0.6);
+
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+    transition: opacity 0.4s ease-out 0.7s, transform 0.4s ease-out 0.7s,
+      box-shadow 0.3s ease;
+    font-family: "Valorant-text", sans-serif;
+    text-transform: uppercase;
+    font-size: 35px !important;
+    &:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(255, 70, 85, 0.8);
+    }
+  }
+
+  .confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: #ff4655;
+    opacity: 0;
+    z-index: 1;
+    top: -10px;
+    animation: confetti-fall 5s ease-in forwards;
+  }
+
+  @keyframes confetti-fall {
+    0% {
+      transform: translateY(0) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(100vh) rotate(360deg);
+      opacity: 0;
+    }
+  }
+}

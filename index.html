@@ -42,19 +42,19 @@
       </button>
       <h2>Select Your Agents</h2>
       <div id="agent-selection">
-        <div id="controller-container">
+        <div>
           <h3>Controllers</h3>
           <div id="agents-Controller"></div>
         </div>
-        <div id="sentinel-container">
+        <div>
           <h3>Sentinels</h3>
           <div id="agents-Sentinel"></div>
         </div>
-        <div id="initiator-container">
+        <div>
           <h3>Initiators</h3>
           <div id="agents-Initiator"></div>
         </div>
-        <div id="duelist-container">
+        <div>
           <h3>Duelists</h3>
           <div id="agents-Duelist"></div>
         </div>
@@ -99,10 +99,34 @@
     </div>
 
     <div id="winner-display">
-      <div id="winner-background-image"></div>
-      <div id="winner-splash"></div>
-      <div id="winner-name"></div>
-      <button id="close-winner">Continue</button>
+      <div id="winner-info-container">
+        <div id="winner-name"></div>
+        <div id="winner-details"></div>
+      </div>
+      <div id="winner-splash-container">
+        <div id="winner-background-image"></div>
+        <div id="winner-splash"></div>
+        <button id="close-winner">Continue</button>
+      </div>
+      <!-- New stuff -->
+      <div id="winner-abilities-container">
+        <div id="winner-abilities-box">
+          <div id="winner-abilities-top">
+            <div id="ability_text_one"></div>
+            <div id="ability_text_two"></div>
+            <div id="ability_text_three"></div>
+            <div id="ability_text_four"></div>
+          </div>
+          <hr />
+          <div id="winner-abilities-bottom">
+            <div id="ability_details_one"></div>
+            <div id="ability_details_two"></div>
+            <div id="ability_details_three"></div>
+            <div id="ability_details_four"></div>
+          </div>
+        </div>
+      </div>
+      <!-- end of New stuff -->
     </div>
 
     <div id="recent-history">
