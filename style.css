@@ -440,8 +440,7 @@
 }
 #winner-display #winner-abilities-container {
   display: flex;
-  margin-top: 14%;
-  align-items: stretch;
+  align-items: center;
   margin-right: 10px;
 }
 #winner-display #winner-abilities-box {
@@ -468,6 +467,12 @@
   letter-spacing: 1px;
   font-size: 20px;
   text-transform: none;
+}
+#winner-display #winner-abilities-box #winner-abilities-bottom #ability_details_one,
+#winner-display #winner-abilities-box #winner-abilities-bottom #ability_details_two,
+#winner-display #winner-abilities-box #winner-abilities-bottom #ability_details_three,
+#winner-display #winner-abilities-box #winner-abilities-bottom #ability_details_four {
+  height: 150px;
 }
 #winner-display #winner-abilities-box #winner-abilities-top {
   letter-spacing: 1px;
@@ -895,7 +900,7 @@ button:disabled {
   width: 100%;
   height: 100%;
   position: absolute;
-  z-index: 200;
+  z-index: 2000;
   justify-content: center;
   align-items: center;
   flex-direction: column;
@@ -903,7 +908,7 @@ button:disabled {
   transition: display 0.5s ease-in-out;
 }
 
-@media only screen and (max-width: 1100px) {
+@media only screen and (max-width: 1100px) and (orientation: portrait) {
   #recent-history {
     bottom: 90px;
     left: auto;
@@ -1013,7 +1018,7 @@ button:disabled {
     font-size: 1.7em !important;
   }
 }
-@media only screen and (max-width: 650px) {
+@media only screen and (max-width: 1000px) and (orientation: portrait) {
   #screen-too-small {
     display: flex;
   }

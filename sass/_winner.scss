@@ -24,15 +24,11 @@
 
   #winner-abilities-container {
     display: flex;
-    margin-top: 14%;
-    align-items: stretch;
+    align-items: center;
     margin-right: 10px;
   }
 
   #winner-abilities-box {
-    // grid-column: span 5 / span 5;
-    // grid-row: span 3 / span 3;
-    // grid-row-start: 2;
     padding: 10px;
     display: flex;
     flex-direction: column;
@@ -63,6 +59,13 @@
       letter-spacing: 1px;
       font-size: 20px;
       text-transform: none;
+
+      #ability_details_one,
+      #ability_details_two,
+      #ability_details_three,
+      #ability_details_four {
+        height: 150px;
+      }
     }
 
     #winner-abilities-top {
