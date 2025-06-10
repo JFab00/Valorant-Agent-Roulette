@@ -147,6 +147,26 @@
   padding: 8px 15px;
 }
 
+#settings-button {
+  position: absolute;
+  top: -4px;
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  transition: all 0.3s;
+}
+
+#settings-button:hover {
+  background-color: #ff9ea6;
+}
+
 #settings-panel {
   position: fixed;
   top: 0;
@@ -155,13 +175,13 @@
   width: 780px;
   height: 100vh;
   background-color: #1c1c1c;
-  z-index: 150;
   box-shadow: -4px 0 15px rgba(0, 0, 0, 0.6);
   transition: transform 0.4s ease;
   overflow: hidden;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  z-index: 10000;
 }
 #settings-panel.open {
   transform: translateX(0);
@@ -178,9 +198,15 @@
   right: 24px;
   margin: 0;
   padding: 0;
+  width: 48px;
   border-radius: 100px;
+  display: flex;
+  height: 48px;
   padding: 8px 9px;
   margin-top: 28px;
+  align-content: center;
+  align-items: center;
+  justify-content: center;
 }
 #settings-panel #close-settings:hover {
   background-color: #ff939c;
@@ -786,26 +812,6 @@ button:disabled {
   box-shadow: none;
 }
 
-#settings-button {
-  position: absolute;
-  top: -4px;
-  right: 20px;
-  width: 40px;
-  height: 40px;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-  transition: all 0.3s;
-}
-
-#settings-button:hover {
-  background-color: #ff9ea6;
-}
-
 #cog-icon {
   transition: transform 0.3s;
   display: flex;
@@ -881,6 +887,10 @@ button:disabled {
   font-size: 1em;
   margin-top: 40px;
   /* display: none; */
+}
+
+#bmc-wbtn {
+  background: #ff4655 !important;
 }
 
 @keyframes rotate {

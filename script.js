@@ -5,7 +5,6 @@ const fallbackImage =
 let agentData = [];
 let availableAgents = [];
 let recentWinners = [];
-const maxHistory = 5;
 let isSpinning = false;
 let skipSplash = false;
 let muteSfx = false;
@@ -147,7 +146,7 @@ function updateRecentDisplay() {
   const container = document.getElementById("recent-agents");
   container.innerHTML = "";
   recentWinners
-    .slice()
+    .slice(-5)
     .reverse()
     .forEach((name) => {
       const agent = agentData.find((a) => a.name === name);
@@ -287,6 +286,11 @@ function showWinner(winner) {
   }, 10);
 }
 
+function getMaxHistory() {
+  const limit = Math.floor(availableAgents.length * 0.7);
+  return Math.min(Math.max(limit, 3), 10); // Clamp between 3–10
+}
+
 function startRoulette() {
   const spinButton = document.getElementById("spin-button");
   const settingsButton = document.getElementById("settings-button");
@@ -360,7 +364,7 @@ function startRoulette() {
       setTimeout(() => {
         if (!skipSplash) showWinner(winner);
         recentWinners.push(winner.name);
-        if (recentWinners.length > maxHistory) recentWinners.shift();
+        if (recentWinners.length > getMaxHistory()) recentWinners.shift();
 
         updateRecentDisplay();
         spinButton.disabled = false;
@@ -448,6 +452,22 @@ document.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("close-settings")
     ?.addEventListener("click", toggleSettings);
+
+  // form toggle handling
+  // document.getElementById("feedback-toggle").addEventListener("click", () => {
+  //   document.getElementById("feedback-modal").classList.add("show");
+  // });
+
+  // document.getElementById("close-feedback").addEventListener("click", () => {
+  //   document.getElementById("feedback-modal").classList.remove("show");
+  // });
+
+  // window.addEventListener("click", (e) => {
+  //   const modal = document.getElementById("feedback-modal");
+  //   if (e.target === modal) {
+  //     modal.classList.remove("show");
+  //   }
+  // });
 
   initializeApp();
 });
