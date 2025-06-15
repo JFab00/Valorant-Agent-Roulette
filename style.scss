@@ -7,3 +7,27 @@
 @import "sass/history";
 @import "sass/other";
 @import "sass/responsive";
+
+@-webkit-keyframes pulsing {
+  0% {
+    color: #acacac;
+  }
+  50% {
+    color: #6b6b6b;
+  }
+  100% {
+    color: #acacac;
+  }
+}
+
+@keyframes pulsing {
+  0% {
+    color: #6b6b6b;
+  }
+  50% {
+    color: #4b4b4b;
+  }
+  100% {
+    color: #6b6b6b;
+  }
+}

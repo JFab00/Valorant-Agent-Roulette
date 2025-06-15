@@ -132,4 +132,12 @@
       padding: 8px 15px;
     }
   }
+  #spin-text {
+    color: #acacac;
+    font-family: monospace;
+    text-transform: none;
+    font-weight: bolder;
+    -webkit-animation: pulsing 2s linear infinite;
+    animation: pulsing 2s linear infinite;
+  }
 }

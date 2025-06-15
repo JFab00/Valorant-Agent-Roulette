@@ -4,7 +4,10 @@
     <meta charset="UTF-8" />
     <title>Valorant Agent Roulette</title>
     <link rel="icon" type="image/x-icon" href="resources/favicon.ico" />
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style.css?ts=20" />
+    <meta name="author" content="JFab" />
+    <meta name="application-name" content="Valorant Agent Roulette" />
+    <meta name="title" content="Valorant Agent Roulette" />
     <meta
       name="description"
       content="Spin a Valorant agent randomly! Customize, filter, and let fate pick your next agent."
@@ -13,18 +16,18 @@
       name="keywords"
       content="valorant, agent roulette, valorant random picker, riot games, spin wheel, valroulette"
     />
-    <meta name="author" content="jfab" />
 
     <meta property="og:title" content="Valorant Agent Roulette" />
     <meta
       property="og:description"
       content="Pick a Valorant agent at random. Fun, fast, customizable."
     />
-    <meta
+    <!-- <meta
       property="og:image"
       content="https://agentroulette.jfab.me/thumbnail.png"
-    />
+    /> -->
     <meta property="og:url" content="https://agentroulette.jfab.me" />
+    <meta property="og:site-name" content="Valorant Agent Roulette" />
     <meta property="og:type" content="website" />
     <link
       rel="stylesheet"
@@ -54,6 +57,7 @@
         <div id="selector"></div>
       </div>
       <button id="spin-button">Spin</button>
+      <p id="spin-text">Press <b>SPACE</b> to Spin</p>
     </div>
 
     <div id="overlay"></div>
@@ -154,32 +158,6 @@
       <h2>Recent Picks</h2>
       <div id="recent-agents"></div>
     </div>
-
-    <!-- <button id="feedback-toggle" title="Send Feedback">✉️ Feedback</button>
-
-    <div id="feedback-modal">
-      <div id="feedback-box">
-        <button id="close-feedback">&times;</button>
-        <h2>Send Feedback</h2>
-        <form
-          action="https://formsubmit.co/0bd3ccf638103fd8a6843c08b8e5cceb"
-          method="POST"
-        >
-          <input
-            type="hidden"
-            name="_subject"
-            value="Feedback - Valorant Agent Roulette"
-          />
-          <input type="hidden" name="_captcha" value="false" />
-          <textarea
-            name="message"
-            placeholder="Write your feedback here..."
-            required
-          ></textarea>
-          <button type="submit">Send</button>
-        </form>
-      </div>
-    </div> -->
 
     <script
       data-name="BMC-Widget"

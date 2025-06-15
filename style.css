@@ -146,6 +146,13 @@
   font-size: 35px !important;
   padding: 8px 15px;
 }
+#centered #spin-text {
+  color: #acacac;
+  font-family: monospace;
+  text-transform: none;
+  font-weight: bolder;
+  animation: pulsing 2s linear infinite;
+}
 
 #settings-button {
   position: absolute;
@@ -1031,5 +1038,16 @@ button:disabled {
 @media only screen and (max-width: 1000px) and (orientation: portrait) {
   #screen-too-small {
     display: flex;
+  }
+}
+@keyframes pulsing {
+  0% {
+    color: #6b6b6b;
+  }
+  50% {
+    color: #4b4b4b;
+  }
+  100% {
+    color: #6b6b6b;
   }
 }/*# sourceMappingURL=style.css.map */
